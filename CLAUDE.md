@@ -290,59 +290,19 @@ Set these in GitHub repo Settings → Secrets and variables → Actions:
 
 ### Setting Up Workload Identity Federation
 
-```bash
-# Create service account
-gcloud iam service-accounts create github-actions \
-  --display-name="GitHub Actions" \
-  --project=foodlogr-app
+See [Google's WIF setup guide](https://github.com/google-github-actions/auth#setting-up-workload-identity-federation) for detailed instructions.
 
-# Grant permissions
-gcloud projects add-iam-policy-binding foodlogr-app \
-  --member="serviceAccount:github-actions@foodlogr-app.iam.gserviceaccount.com" \
-  --role="roles/run.admin"
-
-gcloud projects add-iam-policy-binding foodlogr-app \
-  --member="serviceAccount:github-actions@foodlogr-app.iam.gserviceaccount.com" \
-  --role="roles/storage.admin"
-
-gcloud projects add-iam-policy-binding foodlogr-app \
-  --member="serviceAccount:github-actions@foodlogr-app.iam.gserviceaccount.com" \
-  --role="roles/iam.serviceAccountUser"
-
-# Create Workload Identity Pool
-gcloud iam workload-identity-pools create "github-pool" \
-  --location="global" \
-  --display-name="GitHub Actions Pool" \
-  --project=foodlogr-app
-
-# Create Provider
-gcloud iam workload-identity-pools providers create-oidc "github-provider" \
-  --location="global" \
-  --workload-identity-pool="github-pool" \
-  --display-name="GitHub Provider" \
-  --attribute-mapping="google.subject=assertion.sub,attribute.actor=assertion.actor,attribute.repository=assertion.repository" \
-  --issuer-uri="https://token.actions.githubusercontent.com" \
-  --project=foodlogr-app
-
-# Allow GitHub repo to impersonate service account
-gcloud iam service-accounts add-iam-policy-binding \
-  github-actions@foodlogr-app.iam.gserviceaccount.com \
-  --role="roles/iam.workloadIdentityUser" \
-  --member="principalSet://iam.googleapis.com/projects/504360050716/locations/global/workloadIdentityPools/github-pool/attribute.repository/ravigummadi/foodlogr.app" \
-  --project=foodlogr-app
-
-# Get the WIF_PROVIDER value (save this as secret)
-echo "projects/504360050716/locations/global/workloadIdentityPools/github-pool/providers/github-provider"
-
-# WIF_SERVICE_ACCOUNT value
-echo "github-actions@foodlogr-app.iam.gserviceaccount.com"
-```
+Required steps:
+1. Create a service account with `roles/run.admin`, `roles/storage.admin`, `roles/iam.serviceAccountUser`
+2. Create a Workload Identity Pool and OIDC Provider for GitHub Actions
+3. Allow the GitHub repo to impersonate the service account
+4. Store `WIF_PROVIDER` and `WIF_SERVICE_ACCOUNT` values as GitHub secrets
 
 ### Firebase Service Account
 
 Generate via Firebase Console → Project Settings → Service Accounts → Generate new private key.
-Save the JSON content as `FIREBASE_SERVICE_ACCOUNT_FOODLOGR_APP` secret.
+Store as `FIREBASE_SERVICE_ACCOUNT_FOODLOGR_APP` GitHub secret.
 
 ### Manual Trigger
 
-The workflow can also be triggered manually from GitHub Actions tab with options to deploy backend, web, or both.
+The workflow can be triggered manually from GitHub Actions tab with options to deploy backend, web, or both.
