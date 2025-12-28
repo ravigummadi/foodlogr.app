@@ -34,6 +34,8 @@ transport_security = TransportSecuritySettings(
         "*.run.app",
         "foodlogr-mcp-504360050716.us-central1.run.app:*",
         "foodlogr-mcp-504360050716.us-central1.run.app",
+        "mcp.foodlogr.app:*",
+        "mcp.foodlogr.app",
     ],
 )
 

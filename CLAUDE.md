@@ -71,7 +71,7 @@ gcloud run deploy foodlogr-mcp \
   --allow-unauthenticated
 ```
 
-**Service URL**: `https://foodlogr-mcp-504360050716.us-central1.run.app`
+**Service URL**: `https://mcp.foodlogr.app` (Cloud Run: `foodlogr-mcp-504360050716.us-central1.run.app`)
 
 ### Frontend (Firebase Hosting)
 
@@ -244,7 +244,7 @@ curl -X POST "https://foodlogr-mcp-504360050716.us-central1.run.app/mcp" \
 ```bash
 # Add the MCP server
 claude mcp add --transport http foodlogr \
-  https://foodlogr-mcp-504360050716.us-central1.run.app/mcp \
+  https://mcp.foodlogr.app/mcp \
   --header "Authorization: Bearer <YOUR_API_KEY>"
 
 # Remove if needed
