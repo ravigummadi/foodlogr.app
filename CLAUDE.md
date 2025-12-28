@@ -268,3 +268,81 @@ claude mcp remove foodlogr
 | `backend/src/shell/auth.py` | API key generation, hashing, validation |
 | `backend/src/core/models.py` | Pydantic models (UserSettings, FoodEntry, etc.) |
 | `backend/src/core/reports.py` | Weekly report generation, fat_added calculation |
+| `.github/workflows/deploy.yml` | GitHub Actions auto-deploy workflow |
+
+## GitHub Actions (CI/CD)
+
+Auto-deployment is configured via `.github/workflows/deploy.yml`. On merge to `main`:
+- Detects changes in `backend/` or `web/` directories
+- Runs tests for backend changes
+- Deploys backend to Cloud Run (if changed)
+- Deploys web to Firebase Hosting (if changed)
+
+### Required Secrets
+
+Set these in GitHub repo Settings → Secrets and variables → Actions:
+
+| Secret | Description |
+|--------|-------------|
+| `WIF_PROVIDER` | Workload Identity Federation provider |
+| `WIF_SERVICE_ACCOUNT` | GCP service account for WIF |
+| `FIREBASE_SERVICE_ACCOUNT_FOODLOGR_APP` | Firebase service account JSON |
+
+### Setting Up Workload Identity Federation
+
+```bash
+# Create service account
+gcloud iam service-accounts create github-actions \
+  --display-name="GitHub Actions" \
+  --project=foodlogr-app
+
+# Grant permissions
+gcloud projects add-iam-policy-binding foodlogr-app \
+  --member="serviceAccount:github-actions@foodlogr-app.iam.gserviceaccount.com" \
+  --role="roles/run.admin"
+
+gcloud projects add-iam-policy-binding foodlogr-app \
+  --member="serviceAccount:github-actions@foodlogr-app.iam.gserviceaccount.com" \
+  --role="roles/storage.admin"
+
+gcloud projects add-iam-policy-binding foodlogr-app \
+  --member="serviceAccount:github-actions@foodlogr-app.iam.gserviceaccount.com" \
+  --role="roles/iam.serviceAccountUser"
+
+# Create Workload Identity Pool
+gcloud iam workload-identity-pools create "github-pool" \
+  --location="global" \
+  --display-name="GitHub Actions Pool" \
+  --project=foodlogr-app
+
+# Create Provider
+gcloud iam workload-identity-pools providers create-oidc "github-provider" \
+  --location="global" \
+  --workload-identity-pool="github-pool" \
+  --display-name="GitHub Provider" \
+  --attribute-mapping="google.subject=assertion.sub,attribute.actor=assertion.actor,attribute.repository=assertion.repository" \
+  --issuer-uri="https://token.actions.githubusercontent.com" \
+  --project=foodlogr-app
+
+# Allow GitHub repo to impersonate service account
+gcloud iam service-accounts add-iam-policy-binding \
+  github-actions@foodlogr-app.iam.gserviceaccount.com \
+  --role="roles/iam.workloadIdentityUser" \
+  --member="principalSet://iam.googleapis.com/projects/504360050716/locations/global/workloadIdentityPools/github-pool/attribute.repository/ravigummadi/foodlogr.app" \
+  --project=foodlogr-app
+
+# Get the WIF_PROVIDER value (save this as secret)
+echo "projects/504360050716/locations/global/workloadIdentityPools/github-pool/providers/github-provider"
+
+# WIF_SERVICE_ACCOUNT value
+echo "github-actions@foodlogr-app.iam.gserviceaccount.com"
+```
+
+### Firebase Service Account
+
+Generate via Firebase Console → Project Settings → Service Accounts → Generate new private key.
+Save the JSON content as `FIREBASE_SERVICE_ACCOUNT_FOODLOGR_APP` secret.
+
+### Manual Trigger
+
+The workflow can also be triggered manually from GitHub Actions tab with options to deploy backend, web, or both.
