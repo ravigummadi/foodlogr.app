@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "foodlogr-app"
+  },
+  "targets": {
+    "foodlogr-app": {
+      "hosting": {
+        "foodlogr": [
+          "foodlogr-app"
+        ]
+      }
+    }
+  }
+}
