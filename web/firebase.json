@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "foodlogr-app",
     "public": "dist",
     "ignore": [
       "firebase.json",
