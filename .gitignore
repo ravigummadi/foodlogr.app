@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+
+# Build outputs
+dist/
+build/
+*.egg-info/
+
+# E2E test artifacts
+e2e/test-results/
+e2e/playwright-report/
+e2e/.playwright/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Environment
+.env
+.env.local
+*.local

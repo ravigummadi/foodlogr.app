@@ -195,6 +195,32 @@ cd backend
 pytest tests/core/ -v
 ```
 
+### Shell Layer Tests (Auth Functions)
+```bash
+cd backend
+pytest tests/shell/test_auth.py -v
+```
+
+### API Integration Tests
+```bash
+cd backend
+pytest tests/shell/test_api.py -v
+```
+
+### E2E Browser Tests (Playwright)
+```bash
+cd e2e
+npm install
+npx playwright install chromium
+npm test
+```
+
+### Run All Backend Tests
+```bash
+cd backend
+pytest tests/ -v
+```
+
 ### Manual MCP Testing
 ```bash
 # Initialize

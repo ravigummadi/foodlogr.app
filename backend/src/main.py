@@ -11,6 +11,7 @@ import uvicorn
 from starlette.applications import Starlette
 from starlette.middleware import Middleware
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 from starlette.routing import Route, Mount
@@ -128,10 +129,18 @@ def create_app() -> Starlette:
         Mount("/", app=mcp_app),
     ]
 
-    # Create Starlette app with auth middleware and MCP lifespan
+    # Create Starlette app with CORS and auth middleware
     app = Starlette(
         routes=routes,
-        middleware=[Middleware(AuthMiddleware)],
+        middleware=[
+            Middleware(
+                CORSMiddleware,
+                allow_origins=["https://foodlogr.app", "http://localhost:5173"],
+                allow_methods=["GET", "POST", "OPTIONS"],
+                allow_headers=["*"],
+            ),
+            Middleware(AuthMiddleware),
+        ],
         lifespan=mcp_app.router.lifespan_context,
     )
 
